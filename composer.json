@@ -1,0 +1,47 @@
+{
+  "name": "joomla-bible-study/proclaim-jsitemap-plugin",
+  "type": "joomla-plugin",
+  "description": "JSitemap Professional external plugin for the Proclaim Joomla component. Indexes studies, series, and teachers for sitemap generation.",
+  "keywords": [
+    "joomla",
+    "jsitemap",
+    "sitemap",
+    "proclaim",
+    "bible"
+  ],
+  "homepage": "https://github.com/Joomla-Bible-Study/proclaim_jsitemap_plugin",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "Tom Fuller",
+      "email": "info@christianwebministries.org",
+      "homepage": "https://www.christianwebministries.org",
+      "role": "Tech Writer & Developer"
+    },
+    {
+      "name": "Brent Cordis",
+      "email": "info@christianwebministries.org",
+      "homepage": "https://www.christianwebministries.org",
+      "role": "Lead Developer"
+    }
+  ],
+  "version": "1.0.0",
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "config": {
+    "platform": {
+      "php": "8.3.0"
+    },
+    "allow-plugins": {}
+  },
+  "support": {
+    "issues": "https://github.com/Joomla-Bible-Study/proclaim_jsitemap_plugin/issues",
+    "docs": "https://www.christianwebministries.org/docs"
+  },
+  "require": {
+    "php": "^8.3.0"
+  },
+  "scripts": {
+    "build": "php build/build.php"
+  }
+}

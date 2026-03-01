@@ -1,0 +1,36 @@
+# IDE & System Related Files
+.buildpath
+.project
+.settings
+.DS_Store
+.idea
+.vscode
+
+# AI tooling
+.ai/
+
+# Dependencies
+node_modules/
+composer.phar
+
+# Build outputs
+*.zip
+bin/
+out/
+gen/
+build/reports/
+
+# Vendor SDK & reference (not distributed)
+vendor/
+
+# Local configuration
+/build.properties
+
+# OSX
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Desktop.ini

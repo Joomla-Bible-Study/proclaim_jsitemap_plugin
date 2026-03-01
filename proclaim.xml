@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<datasource>
+	<name>Proclaim</name>
+	<version>1.0.0</version>
+	<author>CWM Team</author>
+	<authorUrl>https://www.christianwebministries.org</authorUrl>
+	<copyright>(C) 2026 CWM Team</copyright>
+	<license>GPL-2.0-or-later</license>
+	<description>CWM Proclaim Bible Study component data source for JSitemap. Indexes studies/sermons, series, and teachers.</description>
+
+	<config>
+		<fieldset name="params">
+			<field name="publish_up_fallback" type="radio"
+				class="btn-group btn-group-yesno"
+				default="1"
+				description="COM_JMAP_PLGPROCLAIM_PUBLISHUP_FALLBACK_DESC"
+				label="COM_JMAP_PLGPROCLAIM_PUBLISHUP_FALLBACK"
+			>
+				<option value="0">JNO</option>
+				<option value="1">JYES</option>
+			</field>
+
+			<field name="include_teachers" type="radio"
+				class="btn-group btn-group-yesno"
+				default="1"
+				description="COM_JMAP_PLGPROCLAIM_INCLUDE_TEACHERS_DESC"
+				label="COM_JMAP_PLGPROCLAIM_INCLUDE_TEACHERS"
+			>
+				<option value="0">JNO</option>
+				<option value="1">JYES</option>
+			</field>
+
+			<field name="include_series_items" type="radio"
+				class="btn-group btn-group-yesno"
+				default="1"
+				description="COM_JMAP_PLGPROCLAIM_INCLUDE_SERIES_ITEMS_DESC"
+				label="COM_JMAP_PLGPROCLAIM_INCLUDE_SERIES_ITEMS"
+			>
+				<option value="0">JNO</option>
+				<option value="1">JYES</option>
+			</field>
+
+			<field name="included_series" size="40" type="text"
+				default=""
+				label="COM_JMAP_PLGPROCLAIM_INCLUDED_SERIES"
+				description="COM_JMAP_PLGPROCLAIM_INCLUDED_SERIES_DESC"
+			/>
+
+			<field name="excluded_series" size="40" type="text"
+				default=""
+				label="COM_JMAP_PLGPROCLAIM_EXCLUDED_SERIES"
+				description="COM_JMAP_PLGPROCLAIM_EXCLUDED_SERIES_DESC"
+			/>
+		</fieldset>
+	</config>
+</datasource>
