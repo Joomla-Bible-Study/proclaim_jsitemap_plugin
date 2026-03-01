@@ -22,7 +22,15 @@ php build/build.php
 
 The zip is installed via **JSitemap Admin > Data Sources > Import Plugin** (upload the zip file). JSitemap extracts it to `administrator/components/com_jmap/plugins/proclaim/`.
 
-No test suite or linter is configured for this plugin.
+## Test
+
+```bash
+composer test
+# or directly:
+./vendor/bin/phpunit
+```
+
+Unit tests use stub classes for JSitemap and Joomla dependencies — no database or Joomla runtime needed.
 
 ## Code Style
 

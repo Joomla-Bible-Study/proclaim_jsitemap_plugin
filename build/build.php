@@ -33,7 +33,7 @@ echo "Project: {$projectDir}\n";
 $version = 'unknown';
 
 if (\file_exists($manifestXml)) {
-    $xml = \simplexml_load_file($manifestXml);
+    $xml = simplexml_load_string(file_get_contents($manifestXml));
 
     if ($xml && isset($xml->version)) {
         $version = (string) $xml->version;

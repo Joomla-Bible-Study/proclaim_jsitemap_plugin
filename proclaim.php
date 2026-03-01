@@ -1,20 +1,18 @@
 <?php
 
-// namespace administrator\components\com_jmap\plugins;
-
 /**
  * @package    JMAP::EXTERNALPLUGINS::administrator::components::com_jmap
  * @subpackage plugins
  * @author     CWM Team
- * @copyright  (C) 2026 - CWM Team
- * @license    GNU/GPLv2 http://www.gnu.org/licenses/gpl-2.0.html
+ * @copyright  (C) 2026 CWM Team
+ * @license    GPL-2.0-or-later
  */
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
 
-defined('_JEXEC') or die('Restricted access');
+\defined('_JEXEC') or die('Restricted access');
 
 /**
  * External plugin data source for Proclaim (com_proclaim).
@@ -53,7 +51,7 @@ class JMapFilePluginProclaim implements JMapFilePlugin
         $app  = Factory::getApplication();
         $user = $app->getIdentity();
 
-        if (!is_object($user)) {
+        if (!\is_object($user)) {
             throw new JMapException(
                 Text::_('COM_JMAP_PLGPROCLAIM_NOUSER_OBJECT'),
                 'warning'
@@ -75,7 +73,7 @@ class JMapFilePluginProclaim implements JMapFilePlugin
         $aclQueryTeachers = null;
 
         if ($disableAcl !== 'disabled') {
-            $accessList       = implode(',', $accessLevel);
+            $accessList       = \implode(',', $accessLevel);
             $aclQueryStudies  = "\n AND #__bsms_studies.access IN ( " . $accessList . " )";
             $aclQuerySeries   = "\n AND #__bsms_series.access IN ( " . $accessList . " )";
             $aclQueryTeachers = "\n AND #__bsms_teachers.access IN ( " . $accessList . " )";
@@ -96,7 +94,7 @@ class JMapFilePluginProclaim implements JMapFilePlugin
         if ($includedSeries) {
             $arrayIncludedSeries  = array_map('intval', explode(',', $includedSeries));
             $includeSeriesFilters = "\n AND #__bsms_studies.series_id IN ( "
-                . implode(',', $arrayIncludedSeries) . " )";
+                . \implode(',', $arrayIncludedSeries) . " )";
         }
 
         $excludeSeriesFilters = null;
@@ -106,7 +104,7 @@ class JMapFilePluginProclaim implements JMapFilePlugin
         if ($excludedSeries) {
             $arrayExcludedSeries  = array_map('intval', explode(',', $excludedSeries));
             $excludeSeriesFilters = "\n AND #__bsms_studies.series_id NOT IN ( "
-                . implode(',', $arrayExcludedSeries) . " )";
+                . \implode(',', $arrayExcludedSeries) . " )";
         }
 
         // Multilingual filter for studies
@@ -160,11 +158,11 @@ class JMapFilePluginProclaim implements JMapFilePlugin
 
         // Store affected rows for AJAX pagination
         if ($sitemapModel->limitRows) {
-            $sitemapModel->setState('affected_rows', count($items));
+            $sitemapModel->setState('affected_rows', \count($items));
         }
 
         // Route links for each study
-        if (count($items)) {
+        if (\count($items)) {
             $itemsBySeries = [];
 
             foreach ($items as $item) {
@@ -205,14 +203,14 @@ class JMapFilePluginProclaim implements JMapFilePlugin
 
         if ($includedSeries) {
             $seriesCatsIncludeFilter = "\n AND #__bsms_series.id IN ( "
-                . implode(',', $arrayIncludedSeries) . " )";
+                . \implode(',', $arrayIncludedSeries) . " )";
         }
 
         $seriesCatsExcludeFilter = null;
 
         if ($excludedSeries) {
             $seriesCatsExcludeFilter = "\n AND #__bsms_series.id NOT IN ( "
-                . implode(',', $arrayExcludedSeries) . " )";
+                . \implode(',', $arrayExcludedSeries) . " )";
         }
 
         $catsQuery = "SELECT DISTINCT"
@@ -233,10 +231,10 @@ class JMapFilePluginProclaim implements JMapFilePlugin
         // Build categories tree - series are flat (all under parent 0)
         $catsTree = [];
 
-        if (count($totalSeriesCats)) {
+        if (\count($totalSeriesCats)) {
             $linkableCats = $pluginParams->get('linkable_content_cats', 1);
 
-            foreach ($totalSeriesCats as &$seriesCat) {
+            foreach ($totalSeriesCats as $seriesCat) {
                 if ($linkableCats) {
                     $seriesCat->category_link = Route::_(
                         'index.php?option=com_proclaim&view=cwmseriesdisplay&id='
@@ -254,7 +252,7 @@ class JMapFilePluginProclaim implements JMapFilePlugin
         // =============================================================
         // QUERY 3: Optionally include series detail pages as items
         // =============================================================
-        if ($includeSeriesItems && count($totalSeriesCats)) {
+        if ($includeSeriesItems && \count($totalSeriesCats)) {
             if (!isset($returndata['items'])) {
                 $returndata['items'] = [];
             }
@@ -300,7 +298,7 @@ class JMapFilePluginProclaim implements JMapFilePlugin
 
             $teachers = $db->setQuery($teachersQuery)->loadObjectList();
 
-            if (count($teachers)) {
+            if (\count($teachers)) {
                 if (!isset($returndata['items'])) {
                     $returndata['items'] = [];
                 }
