@@ -392,7 +392,7 @@ class JMapFilePluginProclaimTest extends JMapPluginTestCase
     }
 
     // =================================================================
-    // RSS Description Test
+    // RSS Description Tests
     // =================================================================
 
     public function testRssDescriptionIncluded(): void
@@ -410,6 +410,23 @@ class JMapFilePluginProclaimTest extends JMapPluginTestCase
         $this->assertStringContainsString('jsitemap_rss_desc', $studiesQuery);
     }
 
+    public function testRssDescriptionUsesCoalesceIntroText(): void
+    {
+        $studies = [$this->createStudyResult()];
+        $series  = [$this->createSeriesResult()];
+
+        $result = $this->invokePlugin(
+            ['rssinclude' => 1, 'include_teachers' => 0],
+            [$studies, $series],
+            ['documentformat' => 'rss'],
+        );
+
+        $studiesQuery = $result['_queries'][0];
+        $this->assertStringContainsString('COALESCE', $studiesQuery);
+        $this->assertStringContainsString('studyintro', $studiesQuery);
+        $this->assertStringContainsString('studytext', $studiesQuery);
+    }
+
     public function testRssDescriptionExcludedForNonRss(): void
     {
         $studies = [$this->createStudyResult()];
@@ -423,6 +440,182 @@ class JMapFilePluginProclaimTest extends JMapPluginTestCase
 
         $studiesQuery = $result['_queries'][0];
         $this->assertStringNotContainsString('jsitemap_rss_desc', $studiesQuery);
+    }
+
+    public function testSeriesDetailItemsHaveDescription(): void
+    {
+        $series = [$this->createSeriesResult(
+            description: 'A great sermon series about faith.',
+            publishUp: '2025-06-01 08:00:00',
+        )];
+
+        $result = $this->invokePlugin(
+            ['include_teachers' => 0, 'include_series_items' => 1],
+            [[], $series],
+        );
+
+        $this->assertNotEmpty($result['items']);
+        $seriesItem = $result['items'][0];
+        $this->assertObjectHasProperty('jsitemap_rss_desc', $seriesItem);
+        $this->assertEquals('A great sermon series about faith.', $seriesItem->jsitemap_rss_desc);
+    }
+
+    public function testSeriesDetailItemsOmitEmptyDescription(): void
+    {
+        $series = [$this->createSeriesResult()];
+
+        $result = $this->invokePlugin(
+            ['include_teachers' => 0, 'include_series_items' => 1],
+            [[], $series],
+        );
+
+        $seriesItem = $result['items'][0];
+        $this->assertObjectNotHasProperty('jsitemap_rss_desc', $seriesItem);
+    }
+
+    public function testTeacherRssDescriptionIncluded(): void
+    {
+        $teacher = $this->createTeacherResult(jsitemapRssDesc: 'A short bio of the teacher.');
+        $series  = [$this->createSeriesResult()];
+
+        $result = $this->invokePlugin(
+            ['include_teachers' => 1, 'rssinclude' => 1],
+            [[], $series, [$teacher]],
+            ['documentformat' => 'rss'],
+        );
+
+        $teachersQuery = $result['_queries'][2];
+        $this->assertStringContainsString('jsitemap_rss_desc', $teachersQuery);
+        $this->assertStringContainsString('.short', $teachersQuery);
+    }
+
+    public function testTeacherRssDescriptionExcludedForNonRss(): void
+    {
+        $teacher = $this->createTeacherResult();
+        $series  = [$this->createSeriesResult()];
+
+        $result = $this->invokePlugin(
+            ['include_teachers' => 1, 'rssinclude' => 1],
+            [[], $series, [$teacher]],
+            ['documentformat' => 'xml'],
+        );
+
+        $teachersQuery = $result['_queries'][2];
+        $this->assertStringNotContainsString('jsitemap_rss_desc', $teachersQuery);
+    }
+
+    // =================================================================
+    // Metakey / Topics Tests
+    // =================================================================
+
+    public function testStudyItemsHaveMetakeyFromTopics(): void
+    {
+        $study = $this->createStudyResult(metakey: 'Faith, Prayer, Healing');
+        $series = [$this->createSeriesResult()];
+
+        $result = $this->invokePlugin(
+            ['include_teachers' => 0, 'include_series_items' => 0],
+            [[$study], $series],
+        );
+
+        $item = $result['items'][0];
+        $this->assertObjectHasProperty('metakey', $item);
+        $this->assertEquals('Faith, Prayer, Healing', $item->metakey);
+    }
+
+    public function testStudiesQueryJoinsTopicsForMetakey(): void
+    {
+        $studies = [$this->createStudyResult()];
+        $series  = [$this->createSeriesResult()];
+
+        $result = $this->invokePlugin(
+            ['include_teachers' => 0],
+            [$studies, $series],
+        );
+
+        $studiesQuery = $result['_queries'][0];
+        $this->assertStringContainsString('topics.metakey', $studiesQuery);
+        $this->assertStringContainsString('GROUP_CONCAT', $studiesQuery);
+        $this->assertStringContainsString('studytopics', $studiesQuery);
+        $this->assertStringContainsString('topic_text', $studiesQuery);
+    }
+
+    public function testStudyItemsHandleNullMetakey(): void
+    {
+        $study = $this->createStudyResult(metakey: null);
+        $series = [$this->createSeriesResult()];
+
+        $result = $this->invokePlugin(
+            ['include_teachers' => 0, 'include_series_items' => 0],
+            [[$study], $series],
+        );
+
+        $item = $result['items'][0];
+        $this->assertObjectHasProperty('metakey', $item);
+        $this->assertNull($item->metakey);
+    }
+
+    // =================================================================
+    // Publish Up / Google News Tests
+    // =================================================================
+
+    public function testSeriesDetailItemsHavePublishUp(): void
+    {
+        $series = [$this->createSeriesResult(
+            publishUp: '2025-06-01 08:00:00',
+        )];
+
+        $result = $this->invokePlugin(
+            ['include_teachers' => 0, 'include_series_items' => 1],
+            [[], $series],
+        );
+
+        $seriesItem = $result['items'][0];
+        $this->assertObjectHasProperty('publish_up', $seriesItem);
+        $this->assertEquals('2025-06-01 08:00:00', $seriesItem->publish_up);
+    }
+
+    public function testSeriesDetailItemsOmitEmptyPublishUp(): void
+    {
+        $series = [$this->createSeriesResult(publishUp: '0000-00-00 00:00:00')];
+
+        $result = $this->invokePlugin(
+            ['include_teachers' => 0, 'include_series_items' => 1],
+            [[], $series],
+        );
+
+        $seriesItem = $result['items'][0];
+        $this->assertObjectNotHasProperty('publish_up', $seriesItem);
+    }
+
+    public function testTeacherItemsHavePublishUpFromCreated(): void
+    {
+        $teacher = $this->createTeacherResult(created: '2024-06-15 09:00:00');
+        $series  = [$this->createSeriesResult()];
+
+        $result = $this->invokePlugin(
+            ['include_teachers' => 1, 'include_series_items' => 0],
+            [[], $series, [$teacher]],
+        );
+
+        $teacherItem = $result['items'][0];
+        $this->assertObjectHasProperty('publish_up', $teacherItem);
+        $this->assertEquals('2024-06-15 09:00:00', $teacherItem->publish_up);
+    }
+
+    public function testSeriesQueryIncludesDescriptionAndPublishUp(): void
+    {
+        $studies = [$this->createStudyResult()];
+        $series  = [$this->createSeriesResult()];
+
+        $result = $this->invokePlugin(
+            ['include_teachers' => 0],
+            [$studies, $series],
+        );
+
+        $seriesQuery = $result['_queries'][1];
+        $this->assertStringContainsString('.description', $seriesQuery);
+        $this->assertStringContainsString('.publish_up', $seriesQuery);
     }
 
     // =================================================================

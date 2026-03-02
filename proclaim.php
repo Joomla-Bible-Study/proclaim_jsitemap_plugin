@@ -79,11 +79,12 @@ class JMapFilePluginProclaim implements JMapFilePlugin
             $aclQueryTeachers = "\n AND #__bsms_teachers.access IN ( " . $accessList . " )";
         }
 
-        // Evaluate the RSS description field
+        // Evaluate the RSS description field (prefer studyintro, fall back to studytext)
         $itemsDescription = null;
 
         if ($pluginParams->get('rssinclude', 1) && $sitemapModel->getState('documentformat') == 'rss') {
-            $itemsDescription = "\n #__bsms_studies.studytext AS jsitemap_rss_desc,";
+            $itemsDescription = "\n COALESCE(#__bsms_studies.studyintro, #__bsms_studies.studytext)"
+                . " AS jsitemap_rss_desc,";
         }
 
         // Series inclusion/exclusion filters
@@ -128,10 +129,17 @@ class JMapFilePluginProclaim implements JMapFilePlugin
             . "\n #__bsms_studies.modified AS " . $db->quoteName('lastmod') . ","
             . "\n #__bsms_studies.created,"
             . "\n #__bsms_studies.publish_up,"
-            . "\n #__bsms_studies.access"
+            . "\n #__bsms_studies.access,"
+            . "\n topics.metakey"
             . "\n FROM " . $db->quoteName('#__bsms_studies')
             . "\n LEFT JOIN " . $db->quoteName('#__bsms_series')
             . " ON #__bsms_studies.series_id = #__bsms_series.id"
+            . "\n LEFT JOIN ("
+            . " SELECT st.study_id, GROUP_CONCAT(t.topic_text SEPARATOR ', ') AS metakey"
+            . " FROM #__bsms_studytopics st"
+            . " JOIN #__bsms_topics t ON st.topic_id = t.id AND t.published = 1"
+            . " GROUP BY st.study_id"
+            . " ) topics ON #__bsms_studies.id = topics.study_id"
             . "\n WHERE"
             . "\n #__bsms_studies.published = 1"
             . $aclQueryStudies
@@ -217,6 +225,8 @@ class JMapFilePluginProclaim implements JMapFilePlugin
             . "\n #__bsms_series.id AS " . $db->quoteName('category_id') . ","
             . "\n #__bsms_series.alias AS " . $db->quoteName('category_alias') . ","
             . "\n #__bsms_series.series_text AS " . $db->quoteName('category_title') . ","
+            . "\n #__bsms_series.description,"
+            . "\n #__bsms_series.publish_up,"
             . "\n #__bsms_series.modified AS " . $db->quoteName('lastmod')
             . "\n FROM " . $db->quoteName('#__bsms_series')
             . "\n WHERE #__bsms_series.published = 1"
@@ -267,6 +277,18 @@ class JMapFilePluginProclaim implements JMapFilePlugin
                 $seriesRecord->lastmod = $seriesItem->lastmod;
                 $seriesRecord->access  = 1;
 
+                // Series description for RSS feeds
+                if (!empty($seriesItem->description)) {
+                    $seriesRecord->jsitemap_rss_desc = $seriesItem->description;
+                }
+
+                // Publish up date for Google News
+                if (!empty($seriesItem->publish_up)
+                    && $seriesItem->publish_up !== '0000-00-00 00:00:00'
+                ) {
+                    $seriesRecord->publish_up = $seriesItem->publish_up;
+                }
+
                 $returndata['items'][] = $seriesRecord;
             }
         }
@@ -283,10 +305,18 @@ class JMapFilePluginProclaim implements JMapFilePlugin
                     . " OR #__bsms_teachers.language = " . $db->quote($langTag) . ")";
             }
 
+            // Teacher RSS description (short bio)
+            $teacherDescription = null;
+
+            if ($pluginParams->get('rssinclude', 1) && $sitemapModel->getState('documentformat') == 'rss') {
+                $teacherDescription = "\n #__bsms_teachers.short AS jsitemap_rss_desc,";
+            }
+
             $teachersQuery = "SELECT"
                 . "\n #__bsms_teachers.id,"
                 . "\n #__bsms_teachers.alias,"
                 . "\n #__bsms_teachers.teachername AS " . $db->quoteName('title') . ","
+                . $teacherDescription
                 . "\n #__bsms_teachers.modified AS " . $db->quoteName('lastmod') . ","
                 . "\n #__bsms_teachers.created,"
                 . "\n #__bsms_teachers.access"
@@ -314,6 +344,13 @@ class JMapFilePluginProclaim implements JMapFilePlugin
                         && (!$teacher->lastmod || $teacher->lastmod === '0000-00-00 00:00:00')
                     ) {
                         $teacher->lastmod = $teacher->created;
+                    }
+
+                    // Teachers have no publish_up column — use created date
+                    if (!empty($teacher->created)
+                        && $teacher->created !== '0000-00-00 00:00:00'
+                    ) {
+                        $teacher->publish_up = $teacher->created;
                     }
 
                     $returndata['items'][] = $teacher;

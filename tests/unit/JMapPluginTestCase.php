@@ -186,6 +186,7 @@ class JMapPluginTestCase extends TestCase
      * @param   string|null  $created   Created date
      * @param   string|null  $publishUp Publish up date
      * @param   int          $access    Access level
+     * @param   string|null  $metakey   Topic keywords (comma-separated)
      *
      * @return  object
      */
@@ -198,6 +199,7 @@ class JMapPluginTestCase extends TestCase
         ?string $created = '2025-01-01 08:00:00',
         ?string $publishUp = '2025-01-01 09:00:00',
         int $access = 1,
+        ?string $metakey = null,
     ): object {
         $study              = new \stdClass();
         $study->id          = $id;
@@ -208,6 +210,7 @@ class JMapPluginTestCase extends TestCase
         $study->created     = $created;
         $study->publish_up  = $publishUp;
         $study->access      = $access;
+        $study->metakey     = $metakey;
 
         return $study;
     }
@@ -215,10 +218,12 @@ class JMapPluginTestCase extends TestCase
     /**
      * Create a standard series/category result object.
      *
-     * @param   int          $id       Series ID
-     * @param   string       $title    Series title
-     * @param   string       $alias    URL alias
-     * @param   string|null  $lastmod  Last modified date
+     * @param   int          $id           Series ID
+     * @param   string       $title        Series title
+     * @param   string       $alias        URL alias
+     * @param   string|null  $lastmod      Last modified date
+     * @param   string|null  $description  Series description (for RSS)
+     * @param   string|null  $publishUp    Publish up date (for Google News)
      *
      * @return  object
      */
@@ -227,12 +232,16 @@ class JMapPluginTestCase extends TestCase
         string $title = 'Test Series',
         string $alias = 'test-series',
         ?string $lastmod = '2025-01-10 12:00:00',
+        ?string $description = null,
+        ?string $publishUp = null,
     ): object {
         $series                  = new \stdClass();
         $series->category_id    = $id;
         $series->category_alias = $alias;
         $series->category_title = $title;
         $series->lastmod        = $lastmod;
+        $series->description    = $description;
+        $series->publish_up     = $publishUp;
 
         return $series;
     }
@@ -240,12 +249,13 @@ class JMapPluginTestCase extends TestCase
     /**
      * Create a standard teacher result object.
      *
-     * @param   int          $id       Teacher ID
-     * @param   string       $title    Teacher name
-     * @param   string       $alias    URL alias
-     * @param   string|null  $lastmod  Last modified date
-     * @param   string|null  $created  Created date
-     * @param   int          $access   Access level
+     * @param   int          $id               Teacher ID
+     * @param   string       $title            Teacher name
+     * @param   string       $alias            URL alias
+     * @param   string|null  $lastmod          Last modified date
+     * @param   string|null  $created          Created date
+     * @param   int          $access           Access level
+     * @param   string|null  $jsitemapRssDesc  Short bio for RSS feeds
      *
      * @return  object
      */
@@ -256,6 +266,7 @@ class JMapPluginTestCase extends TestCase
         ?string $lastmod = '2025-02-01 14:00:00',
         ?string $created = '2024-06-15 09:00:00',
         int $access = 1,
+        ?string $jsitemapRssDesc = null,
     ): object {
         $teacher          = new \stdClass();
         $teacher->id      = $id;
@@ -264,6 +275,10 @@ class JMapPluginTestCase extends TestCase
         $teacher->lastmod = $lastmod;
         $teacher->created = $created;
         $teacher->access  = $access;
+
+        if ($jsitemapRssDesc !== null) {
+            $teacher->jsitemap_rss_desc = $jsitemapRssDesc;
+        }
 
         return $teacher;
     }
